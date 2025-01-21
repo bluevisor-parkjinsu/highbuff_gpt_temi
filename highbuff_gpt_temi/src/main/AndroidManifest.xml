@@ -41,7 +41,7 @@
             />
 
         <provider
-            android:authorities="kr.bluevisor.robot.highbuff_gpt_temi.com.robotemi.sdk.debug"
+            android:authorities="kr.bluevisor.robot.highbuff_gpt_temi.com.robotemi.sdk"
 
             android:enabled="${forTemi}"
             android:exported="false"

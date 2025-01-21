@@ -3,7 +3,6 @@ package kr.bluevisor.robot.highbuff_gpt_temi.presentation.theme
 import android.app.Activity
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
