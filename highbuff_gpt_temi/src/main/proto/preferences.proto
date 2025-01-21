@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option java_package = "kr.bluevisor.robot.highbuff_gpt_temi";
+option java_multiple_files = true;
+
+message ProtoGptPreferences {
+  string background_image_uri_token = 1;
+  string person_nearby_comment = 2;
+  string person_faraway_comment = 3;
+  string target_url = 4;
+  string company_name = 5;
+  string company_telephone_number = 6;
+  string company_owner_name = 7;
+  repeated UserDefinedQuestionAndAnswer user_defined_question_answer = 8;
+  repeated CompanyInfo company_info = 9;
+}
+
+message UserDefinedQuestionAndAnswer {
+  string question = 1;
+  string answer = 2;
+}
+
+message CompanyInfo {
+  string name = 1;
+  string telephone_number = 2;
+  string owner_name = 3;
+}

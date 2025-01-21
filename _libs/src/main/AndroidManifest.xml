@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Default permissions setting for LG-CLOi thirdPartyLibs. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-sdk
+        tools:overrideLibrary="com.lge.thirdpartylib, com.lge.rtsp" />
+
+    <!-- for LG-CLOi thirdPartyLibs. -->
+    <application
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true">
+
+        <activity
+            android:name=".presentation.ui.NativeRobotCameraActivity" />
+
+        <provider
+            android:authorities="kr.bluevisor.robot.libs.com.robotemi.sdk"
+            android:enabled="${forTemi}"
+            android:exported="false"
+            android:name="com.robotemi.sdk.TemiSdkContentProvider"
+            tools:replace="android:authorities, android:enabled" />
+
+    </application>
+
+</manifest>
