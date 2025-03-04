@@ -19,6 +19,7 @@ import java.io.OutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
+
 private object ProtoPreferencesSerializer : Serializer<ProtoGptPreferences> {
     override val defaultValue: ProtoGptPreferences = ProtoGptPreferences.getDefaultInstance()
 
@@ -50,28 +51,4 @@ class ProtoPreferencesDataSource @Inject constructor(
 ) {
     val preferencesFlow = context.protoDataStore.data
         .flowOn(Dispatchers.IO)
-
-    suspend fun setPreferences(setter: ProtoGptPreferences.Builder.() -> ProtoGptPreferences.Builder) {
-        withContext(Dispatchers.IO) {
-            context.protoDataStore.updateData { preferences ->
-                preferences.toBuilder()
-                    .setter()
-                    .build()
-            }
-        }
-    }
-}
-
-fun ProtoGptPreferences.Builder.setAllUserDefinedQuestionAnswer(
-    qnaList: List<UserDefinedQuestionAndAnswer>
-): ProtoGptPreferences.Builder {
-    clearUserDefinedQuestionAnswer()
-    return addAllUserDefinedQuestionAnswer(qnaList)
-}
-
-fun ProtoGptPreferences.Builder.setAllCompanyInfo(
-    infoList: List<CompanyInfo>
-): ProtoGptPreferences.Builder {
-    clearCompanyInfo()
-    return addAllCompanyInfo(infoList)
 }

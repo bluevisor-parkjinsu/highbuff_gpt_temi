@@ -4,20 +4,27 @@ import android.util.Log
 import android.widget.ImageView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -42,23 +50,21 @@ fun ChangeFaceScreen(
     navController: NavController,
     viewModel: SharedViewModel = hiltViewModel()
 ) {
+    val allFaceExpressions = viewModel.allFaceExpressions
+    val showChangeFaceButton = remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
-    val imageUri by viewModel.imageUri.observeAsState(R.drawable.face__cat__normal)
+    Box(
+        modifier = Modifier.fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { offset ->
+                        android.util.Log.e("onLongPress","onLongPress")
+                        showChangeFaceButton.value = true
+                    }
+                )
+            }
 
-    val previousImageUri = remember { mutableStateOf(imageUri) }
-
-    LaunchedEffect(imageUri) {
-        if (imageUri != previousImageUri.value) {
-            SharedPrefUtil(context).saveInt("imageSave", imageUri)
-            Log.e("ChangeFaceScreen", imageUri.toString())
-            previousImageUri.value = imageUri
-        }
-    }
-
-
-    val faceExpressions = viewModel.faceExpressions
-    Box(modifier = Modifier.fillMaxSize()) {
+    ) {
         AndroidView(
             modifier = Modifier
                 .fillMaxSize()
@@ -69,61 +75,92 @@ fun ChangeFaceScreen(
                 }
             },
         )
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(faceExpressions) { faceExpression ->
-                FaceExpressionItem(
-                    faceExpression = faceExpression,
-                    onClick = {
-                        viewModel.onItemClicked(faceExpression, navController)
-                    }
-                )
+            items(allFaceExpressions) { faceExpression ->
+                // 각 아이템이 화면을 꽉 채우도록 설정
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                ) {
+                    FaceExpressionTypeItem(
+                        navController,
+                        viewModel,
+                        showChangeFaceButton = showChangeFaceButton,  // 상태 전달
+                        faceExpression = faceExpression,
+                        onClick = {
+                            Log.e("ChangeFaceScreen.onclick", faceExpression.toString())
+                            viewModel.onItemClicked(navController,faceExpression)
+
+                        }
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun FaceExpressionItem(
+fun FaceExpressionTypeItem(
+    navController: NavController,
+    viewModel: SharedViewModel,
+    showChangeFaceButton: MutableState<Boolean>,
     faceExpression: FaceExpression, onClick: () -> Unit
 ) {
-    Card(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .padding(8.dp)
-            .clickable(onClick = onClick),
+            .fillMaxSize()
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()
+        Card(
+            modifier = Modifier
+                .height(900.dp)
+                .width(1000.dp)
+                .padding(20.dp)
+                .clickable(onClick = onClick)
+                .align(Alignment.Center),
+            shape = RoundedCornerShape(16.dp),
         ) {
-            // Glide를 사용하여 이미지 로드
-            AndroidView(
-                modifier = Modifier
-                    .size(150.dp)
-                    .padding(15.dp),
-                factory = { context ->
-                    ImageView(context).apply {
-                        scaleType = ImageView.ScaleType.CENTER_CROP
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                AndroidView(
+                    modifier = Modifier
+                        .height(900.dp)
+                        .width(1000.dp)
+                        .padding(top = 15.dp, start = 15.dp, end = 15.dp, bottom = 20.dp),
+                    factory = { context ->
+                        ImageView(context).apply {
+                            scaleType = ImageView.ScaleType.CENTER_CROP
+                        }
+                    },
+                    update = { imageView ->
+                        Glide.with(imageView.context)
+                            .asGif()
+                            .load(faceExpression.image)
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(imageView)
                     }
-                },
-                update = { imageView ->
-                    Glide.with(imageView.context)
-                        .asGif()
-                        .load(faceExpression.image)
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .into(imageView)
-                }
-            )
-            Text(
-                text = faceExpression.name,
-                modifier = Modifier.weight(1f)
-            )
+                )
+            }
+        }
+        if (showChangeFaceButton.value) {
+            Button(
+                onClick = {
+                    viewModel.onDetailsItemClicked(navController, faceExpression)
+                    showChangeFaceButton.value = false},
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 400.dp, end = 50.dp)
+            ) {
+                Text("얼굴 표정 종류")
+            }
         }
     }
 }

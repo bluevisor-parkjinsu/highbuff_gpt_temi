@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kr.bluevisor.robot.highbuff_gpt_temi.R
+import kr.bluevisor.robot.highbuff_gpt_temi.presentation.model.SharedViewModel
 import kr.bluevisor.robot.highbuff_gpt_temi.presentation.theme.MainTheme
 import kr.bluevisor.robot.libs.core.platform.robot.TemiRobot
 import kr.bluevisor.robot.libs.core.platform.robot.TemiRobotPermission
@@ -32,7 +33,8 @@ import javax.inject.Inject
 @Composable
 private fun MainNavigation(
     temiRobot: TemiRobot,
-    startDestination: String = MainActivity.SCREEN__ALIAS__DEFAULT
+    startDestination: String = MainActivity.SCREEN__ALIAS__DEFAULT,
+    sharedViewModel: SharedViewModel = hiltViewModel()
 ) {
     val navGraphName = "navGraph"
     val navController = rememberNavController()
@@ -40,10 +42,13 @@ private fun MainNavigation(
     NavHost(navController, startDestination = navGraphName) {
         navigation(route = navGraphName, startDestination = startDestination) {
             composable(MainActivity.SCREEN__CHANGE_FACE) { navBackStackEntry ->
-                ChangeFaceScreen(navController, viewModel = hiltViewModel())
+                ChangeFaceScreen(navController, viewModel = sharedViewModel)
             }
-            composable(MainActivity.SCREEN__PROMOTION) { navBackStackEntry ->
-                PromotionScreen(navController)
+            composable(MainActivity.SCREEN__CHANGE_FACE_DETAILS) { navBackStackEntry ->
+                ChangeFaceDetailsScreen(navController, viewModel = sharedViewModel)
+            }
+            composable(MainActivity.SCREEN__MAIN) { navBackStackEntry ->
+                MainScreen(navController, sharedViewModel = sharedViewModel)
             }
         }
     }
@@ -62,7 +67,8 @@ class MainActivity : ComponentActivity() {
             ?: SCREEN__ALIAS__DEFAULT
         setContent {
             MainTheme {
-                MainNavigation(temiRobot, startDestination)
+                val sharedViewModel: SharedViewModel = hiltViewModel()
+                MainNavigation(temiRobot, sharedViewModel = sharedViewModel)
             }
         }
         LLog.v("startDestination: $startDestination.")
@@ -98,8 +104,9 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val KEY_INTENT_EXTRA__START_DESTINATION_SCREEN = "startDestinationScreen"
-        const val SCREEN__PROMOTION = "promotion"
+        const val SCREEN__MAIN = "main"
         const val SCREEN__CHANGE_FACE = "change_face"
-        const val SCREEN__ALIAS__DEFAULT = SCREEN__PROMOTION    // FIXME : Restore me.
+        const val SCREEN__CHANGE_FACE_DETAILS = "change_details_face"
+        const val SCREEN__ALIAS__DEFAULT = SCREEN__MAIN    // FIXME : Restore me.
     }
 }
